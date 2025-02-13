@@ -1,3 +1,15 @@
-venv/
+# 虚拟环境
 .venv/
-env/
+venv/
+
+# Python 缓存文件
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE 配置文件（如果你用 VS Code 或 PyCharm）
+.vscode/
+.idea/
+
+# 环境变量文件（如果有的话）
+.env
