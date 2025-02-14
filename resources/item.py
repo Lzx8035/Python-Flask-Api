@@ -2,7 +2,8 @@ import uuid
 from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError # type: ignore
+from flask_jwt_extended import jwt_required
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 from db import db
 from schemas import ItemSchema, ItemUpdateSchema
@@ -12,11 +13,13 @@ blp = Blueprint("Items", __name__, description="Operations on items")
 
 @blp.route("/item/<uuid:item_id>")
 class Item(MethodView):
+    @jwt_required()
     @blp.response(200, ItemSchema)
     def get(self, item_id):
         item = ItemModel.query.get_or_404(item_id)
         return item
 
+    @jwt_required()
     @blp.arguments(ItemUpdateSchema)
     @blp.response(200, ItemSchema)
     def put(self, item_data, item_id):
@@ -33,6 +36,7 @@ class Item(MethodView):
             abort(500, message="An error occurred while updating the item.") 
         return item
     
+    @jwt_required()
     @blp.response(204) 
     def delete(self, item_id):
         item = ItemModel.query.get_or_404(item_id)
@@ -46,10 +50,12 @@ class Item(MethodView):
 
 @blp.route("/item")
 class ItemList(MethodView):
+    @jwt_required()
     @blp.response(200, ItemSchema(many=True))
     def get(self):
         return ItemModel.query.all()
     
+    @jwt_required(fresh = True)
     @blp.arguments(ItemSchema)
     @blp.response(201, ItemSchema)
     def post(self, item_data):
@@ -57,8 +63,8 @@ class ItemList(MethodView):
         try:
             db.session.add(item)
             db.session.commit()
-        except IntegrityError:
+        except IntegrityError: # 处理唯一性冲突/Handle uniqueness conflicts
             abort(400, message="A item with that name already exists.")
-        except SQLAlchemyError:
+        except SQLAlchemyError: # 处理一般数据库错误/Handle general DB errors
             abort(500, message="An error occurred while inserting the item.")
         return item

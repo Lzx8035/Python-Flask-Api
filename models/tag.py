@@ -1,5 +1,5 @@
 from db import db
-from sqlalchemy.dialects.postgresql import UUID # type: ignore
+from sqlalchemy.dialects.postgresql import UUID
 import uuid
 
 class TagModel(db.Model):

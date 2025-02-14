@@ -22,7 +22,9 @@
 # class StoreSchema(PlainStoreSchema):
 #     items = fields.List(fields.Nested(PlainItemSchema()), dump_only=True)
 
+import re
 from marshmallow import Schema, fields, validates, validates_schema, ValidationError
+from models.user import UserModel
 
 class PlainItemSchema(Schema):
     id = fields.UUID(dump_only=True)
@@ -96,3 +98,25 @@ class TagAndItemSchema(Schema):
     message = fields.Str()
     item = fields.Nested(ItemSchema)
     tag = fields.Nested(TagSchema)
+
+###### USER
+class UserSchema(Schema):
+    id = fields.UUID(dump_only=True) # 只能输出，不能输入
+    username = fields.Str(required=True) # 既能输入也能输出
+    password = fields.Str(required=True, load_only=True) # 只用于输入，不会输出
+    # password_hash = fields.Str(dump_only=True)  # 添加这行来输出哈希密码，不推荐暴露给前端
+
+    @validates('username')
+    def validate_username(self, value):
+        if not 3 <= len(value) <= 80:
+            raise ValidationError('Username must be 3-80 characters and can only contain letters, numbers, and underscore')
+        if not re.match(r'^[a-zA-Z0-9_]+$', value):
+            raise ValidationError('Username can only contain letters, numbers, and underscore')
+
+    @validates('password')
+    def validate_password(self, value):
+        if not (len(value) >= 8 and
+                any(c.isupper() for c in value) and
+                any(c.islower() for c in value) and
+                any(c.isdigit() for c in value)):
+            raise ValidationError('Password must be at least 8 characters and contain upper/lowercase letters and numbers')
