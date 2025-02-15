@@ -8,6 +8,9 @@ class ItemModel(db.Model):
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = db.Column(db.String(80), unique=False, nullable=False)
     price = db.Column(db.Float(precision=2), unique=False, nullable=False)
+
+    description = db.Column(db.String(255))
+    quantity = db.Column(db.Integer, nullable=False, default=0)
     
     # 多对一关系
     store_id = db.Column(UUID(as_uuid=True), db.ForeignKey("stores.id"), nullable=False)

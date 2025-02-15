@@ -4,6 +4,7 @@ import secrets
 from flask import Flask, jsonify
 from flask_smorest import Api
 from flask_jwt_extended import JWTManager
+from flask_migrate import Migrate
 
 from db import db
 import models
@@ -29,6 +30,7 @@ def create_app(db_url=None):
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)
+    migrate = Migrate(app, db)
     api = Api(app)
 
     # app.config['SECRET_KEY'] = secrets.SystemRandom().getrandbits(128)
