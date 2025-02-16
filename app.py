@@ -24,9 +24,11 @@ def create_app(db_url=None):
     app.config["OPENAPI_SWAGGER_UI_PATH"] = "/swagger-ui"
     app.config["OPENAPI_SWAGGER_UI_URL"] = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
     app.config["PROPAGATE_EXCEPTIONS"] = True
-    app.config["SQLALCHEMY_DATABASE_URI"] = (
-    db_url or os.getenv("DATABASE_URL", "sqlite:///data.db")
-)
+    # app.config["SQLALCHEMY_DATABASE_URI"] = (
+    # db_url or os.getenv("DATABASE_URL", "sqlite:///data.db")
+    app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://myuser:mypassword@db:5432/mydatabase"
+    # 💡 为什么 db 而不是 localhost？在 docker-compose.yml 里，我们定义了一个 services: 叫 db，所以 Flask 需要用 db 这个名字 访问数据库，而不是 localhost
+
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)
@@ -58,7 +60,7 @@ def create_app(db_url=None):
 
     @jwt.additional_claims_loader
     def add_claims_to_jwt(identity):
-        if identity == "1df33cf9-3a2c-4e53-8cac-637618fc67db":
+        if identity == "df566a10-75a5-4884-ae66-f2ba832cf4ff":
             return {"is_admin": True}
         return {"is_admin": False}
     
