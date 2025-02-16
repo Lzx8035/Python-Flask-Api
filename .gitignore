@@ -16,7 +16,7 @@ __pycache__/
 .env.local
 
 # 数据库文件
-*.db
+# *.db
 *.sqlite3
 
 # 日志文件
