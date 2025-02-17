@@ -26,7 +26,9 @@ def create_app(db_url=None):
     app.config["PROPAGATE_EXCEPTIONS"] = True
     # app.config["SQLALCHEMY_DATABASE_URI"] = (
     # db_url or os.getenv("DATABASE_URL", "sqlite:///data.db")
-    app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://myuser:mypassword@db:5432/mydatabase"
+    # app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://myuser:mypassword@db:5432/mydatabase"
+    DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://myuser:mypassword@db:5432/mydatabase")
+    app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
     # 💡 为什么 db 而不是 localhost？在 docker-compose.yml 里，我们定义了一个 services: 叫 db，所以 Flask 需要用 db 这个名字 访问数据库，而不是 localhost
 
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
