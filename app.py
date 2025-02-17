@@ -62,7 +62,7 @@ def create_app(db_url=None):
 
     @jwt.additional_claims_loader
     def add_claims_to_jwt(identity):
-        if identity == "da8adeb0-2f58-40ab-8122-f2a64cc974d5":
+        if str(identity) == "da8adeb0-2f58-40ab-8122-f2a64cc974d5":
             return {"is_admin": True}
         return {"is_admin": False}
     
