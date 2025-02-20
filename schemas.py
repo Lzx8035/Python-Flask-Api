@@ -23,7 +23,7 @@
 #     items = fields.List(fields.Nested(PlainItemSchema()), dump_only=True)
 
 import re
-from marshmallow import Schema, fields, validates, validates_schema, ValidationError
+from marshmallow import Schema, fields, validates, validates_schema, ValidationError, validate
 from models.user import UserModel
 
 class PlainItemSchema(Schema):
@@ -120,3 +120,12 @@ class UserSchema(Schema):
                 any(c.islower() for c in value) and
                 any(c.isdigit() for c in value)):
             raise ValidationError('Password must be at least 8 characters and contain upper/lowercase letters and numbers')
+
+class UserRegisterSchema(UserSchema):
+    email = fields.Str(
+        required=True,
+        validate=[
+            validate.Length(min=5, max=50),
+            validate.Email(error="Invalid email format"),
+        ],
+    )

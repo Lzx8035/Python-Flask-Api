@@ -1,21 +1,25 @@
-# Future Enhancements
+# 🚀 Flask API Project
 
-- Caching Layer: Implement Redis for JWT blacklist and caching
+Dockerized Setup - Includes Flask + PostgreSQL + Redis + RQ, managed with docker-compose
 
-- Authentication: Add Google OAuth for third-party authentication
+## 🏗 Tech Stack
 
-- Container Orchestration: Enhance Docker setup with Docker Compose for multi-container management
+- **Flask** - Lightweight web framework
+- **Flask-Smorest** - API documentation
+- **Flask-JWT-Extended** - JWT authentication
+- **Flask-Migrate** - Database migrations
+- **SQLAlchemy** - ORM for database management
+- **PostgreSQL** - Relational database
+- **Redis & RQ** - Caching & task queue
+- **Gunicorn** - Production WSGI server
 
-- Task Queue: Integrate Celery for handling asynchronous tasks
+## 🔧 Future Enhancements
 
-- API Documentation: Enhance API documentation with advanced flask-smorest features
-
-- Testing: Add unit tests with pytest
-
-- Monitoring: Implement logging system and error tracking (e.g., Sentry)
-
-- CI/CD: Set up GitHub Actions for automated deployment
-
-- Rate Limiting: Add API rate limiting for better security
-
-- Performance Optimization: Implement database query optimization and caching strategies
+🚀 **OAuth Authentication** - Google login integration  
+🚀 **Caching Optimization** - Store JWT blacklist & API cache in Redis  
+🚀 **Automated Testing** - Add unit tests with `pytest`  
+🚀 **API Rate Limiting** - Improve security with rate limiting  
+🚀 **Logging & Monitoring** - Integrate **Sentry** for error tracking  
+🚀 **Celery Integration** - Migrate task queue from RQ to Celery for better scalability and periodic tasks  
+🚀 **CI/CD Pipeline** - Set up GitHub Actions for deployment  
+🚀 **Performance Optimization** - Optimize database queries & caching

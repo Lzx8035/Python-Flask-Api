@@ -1,10 +1,12 @@
 import os
 import secrets
+import redis
 
 from flask import Flask, jsonify
 from flask_smorest import Api
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
+from rq import Queue
 
 from db import db
 import models
@@ -17,6 +19,10 @@ from resources.user import blp as UserBlueprint
 def create_app(db_url=None):
     app = Flask(__name__)
 
+    REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
+    redis_conn = redis.from_url(REDIS_URL)
+    app.queue = Queue("emails", connection=redis_conn)
+
     app.config["API_TITLE"] = "Stores REST API"
     app.config["API_VERSION"] = "v1"
     app.config["OPENAPI_VERSION"] = "3.0.3"
@@ -24,13 +30,8 @@ def create_app(db_url=None):
     app.config["OPENAPI_SWAGGER_UI_PATH"] = "/swagger-ui"
     app.config["OPENAPI_SWAGGER_UI_URL"] = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
     app.config["PROPAGATE_EXCEPTIONS"] = True
-    # app.config["SQLALCHEMY_DATABASE_URI"] = (
-    # db_url or os.getenv("DATABASE_URL", "sqlite:///data.db")
-    # app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://myuser:mypassword@db:5432/mydatabase"
     DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://myuser:mypassword@db:5432/mydatabase")
     app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
-    # 💡 为什么 db 而不是 localhost？在 docker-compose.yml 里，我们定义了一个 services: 叫 db，所以 Flask 需要用 db 这个名字 访问数据库，而不是 localhost
-
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)
@@ -39,7 +40,7 @@ def create_app(db_url=None):
 
     # app.config['SECRET_KEY'] = secrets.SystemRandom().getrandbits(128)
     app.config['SECRET_KEY'] = '79132973107910942272314248226039329829'
-    app.config["JWT_SECRET_KEY"] = os.environ.get('JWT_SECRET_KEY', 'your-jwt-secret')  # 可以从环境变量获取
+    app.config["JWT_SECRET_KEY"] = os.environ.get('JWT_SECRET_KEY', 'your-jwt-secret')
     jwt = JWTManager(app)
 
     @jwt.token_in_blocklist_loader
@@ -62,7 +63,8 @@ def create_app(db_url=None):
 
     @jwt.additional_claims_loader
     def add_claims_to_jwt(identity):
-        if str(identity) == "da8adeb0-2f58-40ab-8122-f2a64cc974d5":
+        admin_id = os.getenv("ADMIN_USER_ID")
+        if str(identity) == admin_id:
             return {"is_admin": True}
         return {"is_admin": False}
     

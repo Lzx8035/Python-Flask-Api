@@ -13,18 +13,61 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
   flask-app:
     build: .
     restart: always
     depends_on:
       - db
+      - redis
     environment:
       FLASK_APP: app.py
-      FLASK_RUN_HOST: 0.0.0.0
+      FLASK_ENV: development
     ports:
       - "5005:5000"
     volumes:
       - .:/app
+    command: flask run --host=0.0.0.0 --port=5000 --reload
+
+  rq-worker:
+    build: .
+    restart: always
+    depends_on:
+      - redis
+      - flask-app
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    command: rq worker emails --url redis://redis:6379/0
 
 volumes:
   pgdata:
+  redisdata:
+### DEPLOY
+# 本地 Docker
+# docker-compose down
+# docker compose up -d --build
+
+# 本地 Flask
+# docker exec -it day3-flask-app-1 sh
+
+# migrate
+# flask db migrate -m "Add email field"
+# flask db upgrade
+
+# Render 部署
+# git push origin main
+# Render 自动运行 gunicorn 和 flask db upgrade
+
+# 进入 Flask 容器
+# docker exec -it day3-flask-app-1 sh
+
+# 进入 PostgreSQL 容器
+# docker exec -it day3-db-1 psql -U myuser -d mydatabase
+

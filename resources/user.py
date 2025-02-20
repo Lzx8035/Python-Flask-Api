@@ -1,14 +1,18 @@
+import os
 import uuid
-from flask import request
+import requests
+from flask import request, current_app
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import or_
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, get_jwt, jwt_required
 
 from db import db
 from blocklist import BLOCKLIST
 from models import UserModel
-from schemas import UserSchema
+from schemas import UserSchema, UserRegisterSchema
+from tasks import send_user_registration_email
 
 blp = Blueprint("Users", "users", description="Operations on users", url_prefix="/users") 
 
@@ -24,17 +28,34 @@ class AllUserTEST(MethodView):
 
 @blp.route("/register")
 class UserRegister(MethodView):
-    @blp.arguments(UserSchema)
+    @blp.arguments(UserRegisterSchema)
     def post(self, user_data):
-        if UserModel.query.filter(UserModel.username == user_data["username"]).first():
-            abort(409, message="A user with that username already exists.")
+        if UserModel.query.filter(
+            or_(
+                UserModel.username == user_data["username"],
+                UserModel.email == user_data["email"],
+            )
+        ).first():
+            abort(409, message="A user with that username or email already exists.")
         user = UserModel(
-            username=user_data["username"]
+            username=user_data["username"],
+            email=user_data["email"]
         )
         user.set_password(user_data["password"])
         db.session.add(user)
         db.session.commit()
+        current_app.queue.enqueue(send_user_registration_email, user.email, user.username)
         return {"message": "User created successfully.", "user": str(user.id)}, 201
+    
+
+# For Test: DELETE ALL CUSTOMER
+# docker exec -it day3-flask-app-1 sh
+# flask shell
+# from models import UserModel
+# from db import db
+
+# db.session.query(UserModel).delete()
+# db.session.commit()
     
 @blp.route("/user/<uuid:user_id>")
 class User(MethodView):
